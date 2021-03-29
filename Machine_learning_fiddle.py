@@ -24,7 +24,7 @@ MODEL_MAP = {'Neural netowrk': MLPClassifier,
              'Logistic regression' : LogisticRegression}
 def load_data(path_to_dataset):
     try: 
-        data = pd.read_csv(path_to_dataset, delimiter = ';')
+        data = pd.read_csv(path_to_dataset, delimiter = delimiter)
         st.write('Dataset loaded.')
         return data
     except Exception as e:
@@ -141,6 +141,7 @@ def argument_selector(function):
     return kwargs
 st.sidebar.header('Data (Only numerical features supported.) ')
 path_to_dataset = st.sidebar.text_input('Path to dataset', value = '~/streamlit_stuff/dataset.csv')
+delimiter = st.sidebar.selectbox(('Delimiter?'), [',', ';'])
 feature_columns = eval(st.sidebar.text_input('Feature columns? (allows python expressions. E.g, np.arange(10) )', value = '(2, 3, 5, 7)'))
 target_column = int(st.sidebar.text_input('Feature columns?', value = '11'))
 st.sidebar.subheader('Feature scaling?')
