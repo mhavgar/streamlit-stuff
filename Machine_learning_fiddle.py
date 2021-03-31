@@ -3,25 +3,27 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier 
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier 
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.linear_model import LogisticRegression
 import inspect
 import sys
 import plotly.figure_factory as ff
 import numbers 
 import plotly.express as px
-from xgboost import XGBClassifier as xgb
 np.random.seed(1)
 #Include models here - works with scikit-learn classifiers. 
 MODEL_MAP = {'Neural netowrk': MLPClassifier,
-             'Ranndom Forest Classifier' : RandomForestClassifier, 
+             'Ranndom forest ' : RandomForestClassifier, 
              'K-nearest neighbors':KNeighborsClassifier, 
-             'Extreme gradient boosting' : xgb, 
+             'Gradient boosting ' : GradientBoostingClassifier, 
              'Logistic regression' : LogisticRegression}
+scaler = StandardScaler()
+label_encoder = LabelEncoder()
+
 def load_data(path_to_dataset):
     try: 
         data = pd.read_csv(path_to_dataset, delimiter = delimiter)
@@ -31,22 +33,20 @@ def load_data(path_to_dataset):
         st.write('Exception: ' + str(e))
         return None
 
-def pipeline(data,  TRAIN_SPLIT = 0.6, TEST_SPLIT = 0.2, VAL_SPLIT = 0.2, scaling = True, encode = False):
-    column_names = data.columns
-    scaler = StandardScaler()
-    encoder = OneHotEncoder() 
-    indices = np.arange(data.shape[0])
+def pipeline(data, TRAIN_SPLIT = 0.7, TEST_SPLIT = 0.15, VAL_SPLIT = 0.15, scaling = True):
+    data = data.dropna(axis = 0)
     N = data.shape[0]
+    feature_column_names = np.array([data.columns[i] for i in feature_columns])
+    indices = np.arange(data.shape[0])
     np.random.shuffle(indices)
     train_indices = indices[0:int(TRAIN_SPLIT*N)]
     #Splitting data into training, evaluation- and test-data. 
-    val_indices = indices[int(TRAIN_SPLIT*N)+1:train_indices.shape[0]+ int(VAL_SPLIT*N)]
+    val_indices = indices[train_indices.shape[0]+1:train_indices.shape[0]+1+int(VAL_SPLIT*N)]
     test_indices = indices[val_indices.shape[0]+1:]
     target = data[data.columns[target_column]]
-    data_train = data.iloc[train_indices]
-    X_train = data[data.columns[:-1]].iloc[train_indices].values
-    X_test = data[data.columns[:-1]].iloc[test_indices].values
-    X_val = data[data.columns[:-1]].iloc[val_indices].values
+    X_train = data.iloc[train_indices][feature_column_names].values
+    X_test = data.iloc[test_indices][feature_column_names].values
+    X_val = data.iloc[val_indices][feature_column_names].values
     #Feature scaling if chosen.
     if scale is True:
         X_train = scaler.fit_transform(X_train)
@@ -54,12 +54,16 @@ def pipeline(data,  TRAIN_SPLIT = 0.6, TEST_SPLIT = 0.2, VAL_SPLIT = 0.2, scalin
         X_val = scaler.transform(X_val)
     st.write('# Statistics from trainig set (70%).')
     st.write('## Features')
-    st.write(pd.DataFrame({column_names[i]: X_train[:, i] for i in feature_columns}).describe())
+    #Creating a dataframe of X_train and y_train to easily display statistics.
+    feature_description_dataframe = pd.DataFrame(X_train)
+    feature_description_dataframe.columns = feature_column_names
+    feature_description_dataframe = feature_description_dataframe.describe()
+    st.write(feature_description_dataframe)
     target_description = target.describe()
     classes = set(target.values)
     n_classes = len(classes)
     target_description['N classes'] = n_classes
-    st.header('Description and distribution of target')
+    st.write('## Description and distribution of target')
     for cl in classes: 
         cl_count = sum(np.where(target == cl, 1, 0))
         target_description[f'Classs {cl} (%)'] = 100*cl_count/target.shape[0]
@@ -68,41 +72,47 @@ def pipeline(data,  TRAIN_SPLIT = 0.6, TEST_SPLIT = 0.2, VAL_SPLIT = 0.2, scalin
     with col2:
         fig = px.histogram(target.iloc[train_indices], width=400, height=485)
         st.plotly_chart(fig)
-    if encode is True:
-        y = encoder.fit_transform(y_)
-    y_train = target.iloc[train_indices].values.reshape(-1, 1)
-    y_test = target.iloc[test_indices].values.reshape(-1, 1)
-    y_val = target.iloc[val_indices].values.reshape(-1, 1)
-    return X_train, X_test, X_val, y_train, y_test, y_val
+    correlation_matrix = data.iloc[train_indices].corr()
+    st.write('## Correlation matrix')
+    st.write(correlation_matrix)
+    fig = px.imshow(correlation_matrix)
+    fig.update_xaxes(side='top')
+    st.plotly_chart(fig)
+    #If y is not binary (ie, more classes than 2), we apply one-hot encoding.
+    y_train_encoded = label_encoder.fit_transform(target.iloc[train_indices])
+    y_test = target.iloc[test_indices]
+    y_val = target.iloc[val_indices]
+    return X_train, X_test, X_val, y_train_encoded, y_test, y_val
 
 def execute(model, model_kwargs, fit_kwargs):
     model = model(**model_kwargs)
-    if len(fit_kwargs) == 0:
-        model.fit(X = X_train, y = y_train)
-    else:
-        model.fit(X = X_train, y = y_train, **kwargs)
-    score = model.score(X_val, y_val) 
+    y_val = y_val_encoded
+    y_test = y_test_encoded
+    one_hot_encoded = True
+    model.fit(X = X_train, y = y_train_encoded)
     st.header('Model information')
     st.write(f'Using model **{type(model).__name__}**  with arguments: {model_kwargs}.' )
     st.header('Results')
     st.write(f'Model was fitted with arguemnts {fit_kwargs}.')
-    predicted = model.predict(X_val)
-    st.write(f'''   |Set                        | Score                                 |
+    predicted_train = label_encoder.inverse_transform(model.predict(X_train))
+    predicted_val = label_encoder.inverse_transform(model.predict(X_val))
+    st.write(f'''   |Set                        | Accuracy                              |
                     |---------------------------|---------------------------------------| 
-                    |Train                      | {model.score(X_train, y_train) : 2.4f}|                    
-                    |Validation                 | {score : 2.4f}                        | 
-                    ''')
-    calculated_confusion_matrix = confusion_matrix(y_val, predicted)
+                    |Train                      | {accuracy_score(label_encoder.inverse_transform(y_train_encoded), predicted_train) : 2.4f}|                    
+                    |Validation                 | {accuracy_score(y_val, predicted_val)  : 2.4f}                        | 
+    #                 ''')
+    calculated_confusion_matrix = confusion_matrix(y_val, predicted_val)
     confusion_dataframe = pd.DataFrame(calculated_confusion_matrix)
     confusion_dataframe.columns = [str(label) for label in np.unique(y_val)]
     confusion_dataframe.index = confusion_dataframe.columns.copy()
     st.write('## Confusion matrix')
-    st.write(' Rows are true classes, columns are predicted classes. \n\n')
+    st.write('Rows are true classes, columns are predicted classes. \n\n')
     cols =  st.beta_columns(2)
     with cols[0]:
         st.write(confusion_dataframe)
     with cols[1]:
-        fig = px.imshow(confusion_dataframe)
+        fig = px.imshow(confusion_dataframe, labels = dict(x = 'True class', y = 'Predicted class'))
+        fig.update_xaxes(side='top')
         st.plotly_chart(fig)
         
 def get_default_args(funciton):
@@ -150,9 +160,9 @@ scale = scale == 'Yes'
 load_dataset_button = st.sidebar.button('Load data')    
 try:
     dataset = load_data(path_to_dataset)
-    X_train, X_test, X_val, y_train, y_test, y_val = pipeline(dataset, scaling = scale)
-except Exception:
-    pass
+    X_train, X_test, X_val, y_train_encoded, y_test_encoded, y_val_encoded = pipeline(dataset, scaling = scale)
+except Exception as e:
+    st.write('Encountered an exception: ' + str(e))
 st.sidebar.header('Parameters')
 st.sidebar.markdown('## Model')
 model = st.sidebar.selectbox((''), list(MODEL_MAP.keys()), index = 1)
