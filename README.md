@@ -21,3 +21,19 @@ Use ```$ streamlit run '~/path_to_app/app.py' ```
 
  #### Data
  The app accepts data in ```csv```-format, with separators ```,``` or ```;```. Feature columns must be numerical (non-categorical). The first row of the csv-file should contain the coulmn names. 
+
+ #### Models 
+ ```ml_fiddle``` currently suopport the following scikit-learn classification models:
+  * MLPClassifier
+  * KNeighborsClassifier
+  * RandomForestClassifier
+  * GradientBoostingClassifier
+
+  To add more classifiers, edit the variable 
+  ``` MODEL_MAP = {'Neural netowrk': MLPClassifier,
+             'Ranndom forest ' : RandomForestClassifier, 
+             'K-nearest neighbors': KNeighborsClassifier, 
+             'Gradient boosting ' : GradientBoostingClassifier, 
+             'Logistic regression' : LogisticRegression} ``` 
+  
+  The key is the name as it is displayed in the web-app. 
