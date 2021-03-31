@@ -37,16 +37,17 @@ def pipeline(data, TRAIN_SPLIT = 0.7, TEST_SPLIT = 0.15, VAL_SPLIT = 0.15, scali
     data = data.dropna(axis = 0)
     N = data.shape[0]
     feature_column_names = np.array([data.columns[i] for i in feature_columns])
+    target = data[data.columns[target_column]]
+    data = data[feature_column_names]
     indices = np.arange(data.shape[0])
     np.random.shuffle(indices)
     train_indices = indices[0:int(TRAIN_SPLIT*N)]
     #Splitting data into training, evaluation- and test-data. 
     val_indices = indices[train_indices.shape[0]+1:train_indices.shape[0]+1+int(VAL_SPLIT*N)]
     test_indices = indices[val_indices.shape[0]+1:]
-    target = data[data.columns[target_column]]
-    X_train = data.iloc[train_indices][feature_column_names].values
-    X_test = data.iloc[test_indices][feature_column_names].values
-    X_val = data.iloc[val_indices][feature_column_names].values
+    X_train = data.iloc[train_indices].values
+    X_test = data.iloc[test_indices].values
+    X_val = data.iloc[val_indices].values
     #Feature scaling if chosen.
     if scale is True:
         X_train = scaler.fit_transform(X_train)
@@ -72,7 +73,7 @@ def pipeline(data, TRAIN_SPLIT = 0.7, TEST_SPLIT = 0.15, VAL_SPLIT = 0.15, scali
     with col2:
         fig = px.histogram(target.iloc[train_indices], width=400, height=485)
         st.plotly_chart(fig)
-    correlation_matrix = data.iloc[train_indices].corr()
+    correlation_matrix = pd.concat((data.iloc[train_indices], target.iloc[train_indices]), axis = 1).corr()
     st.write('## Correlation matrix')
     st.write(correlation_matrix)
     fig = px.imshow(correlation_matrix)
