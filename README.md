@@ -30,10 +30,12 @@ Use ```$ streamlit run '~/path_to_app/app.py' ```
   * GradientBoostingClassifier
 
   To add more classifiers, edit the variable 
-  ``` MODEL_MAP = {'Neural netowrk': MLPClassifier,
+  ``` 
+  MODEL_MAP = {'Neural netowrk': MLPClassifier,
              'Ranndom forest ' : RandomForestClassifier, 
              'K-nearest neighbors': KNeighborsClassifier, 
              'Gradient boosting ' : GradientBoostingClassifier, 
-             'Logistic regression' : LogisticRegression} ``` 
+             'Logistic regression' : LogisticRegression} 
+  ``` 
   
   The key is the name as it is displayed in the web-app. 
