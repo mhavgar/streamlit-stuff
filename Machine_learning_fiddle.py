@@ -59,7 +59,7 @@ def pipeline(data, TRAIN_SPLIT = 0.7, TEST_SPLIT = 0.15, VAL_SPLIT = 0.15, scali
     feature_description_dataframe.columns = feature_column_names
     feature_description_dataframe = feature_description_dataframe.describe()
     st.write(feature_description_dataframe)
-    target_description = target.describe()
+    target_description = target.iloc[train_indices].describe()
     classes = set(target.values)
     n_classes = len(classes)
     target_description['N classes'] = n_classes
