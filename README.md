@@ -20,7 +20,7 @@ Use ```$ streamlit run '~/path_to_app/app.py' ```
  ```ml_fiddle.py``` is a simple implementation to test various machine learning algorithms for classification on their chosen dataset. It allows the user to choose between various classification algorithms, fiddle with hyper-parameters to the model, and turn feature scaling on or off. It diplays information and statistics about the predictors and target variable, and estimates the out-of-sample accuracy using train-test-split, together with a confusion matrix. 
 
  #### Data
- The app accepts data in ```csv```-format, with separators ```,``` or ```;```. Feature columns must be numerical (non-categorical). The first row of the csv-file should contain the coulmn names. 
+ The app accepts data in ```csv```-format, with separators ```,``` or ```;```. Feature columns must be numerical (non-categorical). The first row of the csv-file should contain the coulmn names. Decimal point should be ```.``` 
 
  #### Models 
  ```ml_fiddle``` currently suopport the following scikit-learn classification models:
