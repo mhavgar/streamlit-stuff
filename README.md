@@ -39,3 +39,6 @@ Use ```$ streamlit run '~/path_to_app/app.py' ```
   ``` 
   
   The key is the name as it is displayed in the web-app. 
+  
+  ![image](https://user-images.githubusercontent.com/56155016/113124805-33bea500-9216-11eb-8689-336b8c6568d9.png)
+
