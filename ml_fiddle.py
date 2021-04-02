@@ -151,7 +151,7 @@ def argument_selector(function):
         kwargs[key] = st.sidebar.text_input(key + '?', value = value)
     return kwargs
 st.sidebar.header('Data (Only numerical features supported.) ')
-path_to_dataset = st.sidebar.text_input('Path to dataset', value = '~/path_to/dataset.csv')
+path_to_dataset = st.sidebar.text_input('Path to dataset', value = 'data/iris.csv')
 delimiter = st.sidebar.selectbox(('Delimiter?'), [',', ';'])
 feature_columns = eval(st.sidebar.text_input('Feature columns? (allows python expressions. E.g, np.arange(10) )', value = '(2, 3, 5, 7)'))
 target_column = int(st.sidebar.text_input('Feature columns?', value = '11'))
