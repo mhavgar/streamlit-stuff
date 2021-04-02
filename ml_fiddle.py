@@ -153,8 +153,8 @@ def argument_selector(function):
 st.sidebar.header('Data (Only numerical features supported.) ')
 path_to_dataset = st.sidebar.text_input('Path to dataset', value = 'data/iris.csv')
 delimiter = st.sidebar.selectbox(('Delimiter?'), [',', ';'])
-feature_columns = eval(st.sidebar.text_input('Feature columns? (allows python expressions. E.g, np.arange(10) )', value = '(2, 3, 5, 7)'))
-target_column = int(st.sidebar.text_input('Feature columns?', value = '11'))
+feature_columns = eval(st.sidebar.text_input('Feature columns? (allows python expressions. E.g, np.arange(10) )', value = '(0, 1, 2, 3)'))
+target_column = int(st.sidebar.text_input('Feature columns?', value = '4'))
 st.sidebar.subheader('Feature scaling?')
 scale = st.sidebar.selectbox((''), ['Yes', 'No'])
 scale = scale == 'Yes'
