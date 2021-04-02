@@ -112,7 +112,7 @@ def execute(model, model_kwargs, fit_kwargs):
     with cols[0]:
         st.write(confusion_dataframe)
     with cols[1]:
-        fig = px.imshow(confusion_dataframe, labels = dict(x = 'True class', y = 'Predicted class'))
+        fig = px.imshow(confusion_dataframe, labels = dict(x = 'Predicted class', y = 'True class'))
         fig.update_xaxes(side='top')
         st.plotly_chart(fig)
         
